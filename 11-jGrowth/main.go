@@ -37,8 +37,24 @@ func main() {
 			Y: float64(1.5),
 		},
 		plotter.XY{
+			X: float64(240),
+			Y: float64(1.4),
+		},
+		plotter.XY{
+			X: float64(280),
+			Y: float64(1.27),
+		},
+		plotter.XY{
 			X: float64(300),
 			Y: float64(1.2),
+		},
+		plotter.XY{
+			X: float64(350),
+			Y: float64(1.15),
+		},
+		plotter.XY{
+			X: float64(400),
+			Y: float64(1.12),
 		},
 		plotter.XY{
 			X: float64(500),
