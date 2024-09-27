@@ -1,30 +1,49 @@
 package main
 
 import (
-	"math"
-	"math/rand"
-
+	"fmt"
 	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
 	"gonum.org/v1/plot/vg"
+	"math"
 )
 
 func main() {
-	var a, b float64 = 0.7, 3
-	points1 := plotter.XYs{}
-	points2 := plotter.XYs{}
-
-	for i := 0; i <= 10; i++ {
-		points1 = append(points1, plotter.XY{
-			X: float64(i),
-			Y: a*float64(i) + b,
-		})
-		points2 = append(points2, plotter.XY{
-			X: float64(i),
-			Y: a*float64(i) + b + (2*rand.Float64() - 1),
-		})
+	points2 := plotter.XYs{
+		plotter.XY{
+			X: float64(5),
+			Y: float64(10),
+		},
+		plotter.XY{
+			X: float64(10),
+			Y: float64(8),
+		},
+		plotter.XY{
+			X: float64(20),
+			Y: float64(6),
+		},
+		plotter.XY{
+			X: float64(50),
+			Y: float64(4),
+		},
+		plotter.XY{
+			X: float64(100),
+			Y: float64(2.2),
+		},
+		plotter.XY{
+			X: float64(200),
+			Y: float64(1.5),
+		},
+		plotter.XY{
+			X: float64(300),
+			Y: float64(1.2),
+		},
+		plotter.XY{
+			X: float64(500),
+			Y: float64(1.1),
+		},
 	}
 
 	result, err := optimize.Minimize(optimize.Problem{
@@ -32,11 +51,11 @@ func main() {
 			if len(x) != 2 {
 				panic("illegal x")
 			}
-			a := x[0]
-			b := x[1]
+			n := x[0]
+			p := x[1]
 			var sum float64
 			for _, point := range points2 {
-				y := a*point.X + b
+				y := n * math.Pow(p, point.X)
 				sum += math.Abs(y - point.Y)
 			}
 			return sum
@@ -47,26 +66,26 @@ func main() {
 	}
 
 	fa, fb := result.X[0], result.X[1]
+	fmt.Println(fa, fb)
 	points3 := plotter.XYs{}
-	for i := 0; i <= 10; i++ {
+	for i := 5; i <= 500; i += 10 {
 		points3 = append(points3, plotter.XY{
 			X: float64(i),
-			Y: fa*float64(i) + fb, // N(t)=n(p^t)
+			Y: fa * math.Pow(fb, float64(i)), // N(t)=n(p^t)
 		})
 	}
 
 	plt := plot.New()
-	plt.Y.Min, plt.X.Min, plt.Y.Max, plt.X.Max = 0, 0, 10, 10
+	plt.Y.Min, plt.X.Min, plt.Y.Max, plt.X.Max = 0, 0, 100, 100
 
 	if err := plotutil.AddLinePoints(plt,
-		"line1", points1,
 		"line2", points2,
 		"line3", points3,
 	); err != nil {
 		panic(err)
 	}
 
-	if err := plt.Save(5*vg.Inch, 5*vg.Inch, "10-optimize-fit.png"); err != nil {
+	if err := plt.Save(5*vg.Inch, 5*vg.Inch, "11-optimize-fit.png"); err != nil {
 		panic(err)
 	}
 }
