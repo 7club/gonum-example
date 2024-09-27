@@ -1,8 +1,10 @@
 package main
 
 import (
+	"math"
 	"math/rand"
 
+	"gonum.org/v1/gonum/optimize"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/plotter"
 	"gonum.org/v1/plot/plotutil"
@@ -25,12 +27,31 @@ func main() {
 		})
 	}
 
-	fa, fb := LeastSquares(points2)
+	result, err := optimize.Minimize(optimize.Problem{
+		Func: func(x []float64) float64 {
+			if len(x) != 2 {
+				panic("illegal x")
+			}
+			a := x[0]
+			b := x[1]
+			var sum float64
+			for _, point := range points2 {
+				y := a*point.X + b
+				sum += math.Abs(y - point.Y)
+			}
+			return sum
+		},
+	}, []float64{1, 1}, &optimize.Settings{}, &optimize.NelderMead{})
+	if err != nil {
+		panic(err)
+	}
+
+	fa, fb := result.X[0], result.X[1]
 	points3 := plotter.XYs{}
 	for i := 0; i <= 10; i++ {
 		points3 = append(points3, plotter.XY{
 			X: float64(i),
-			Y: fa*float64(i) + fb,
+			Y: fa*float64(i) + fb, // N(t)=n(p^t)
 		})
 	}
 
@@ -45,26 +66,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := plt.Save(5*vg.Inch, 5*vg.Inch, "03-least-squares.png"); err != nil {
+	if err := plt.Save(5*vg.Inch, 5*vg.Inch, "10-optimize-fit.png"); err != nil {
 		panic(err)
 	}
-}
-
-func LeastSquares(points plotter.XYs) (a, b float64) {
-	var xSum, ySum float64
-	for _, point := range points {
-		xSum += point.X
-		ySum += point.Y
-	}
-	xAvg, yAvg := xSum/float64(points.Len()), ySum/float64(points.Len())
-
-	var xySum, xxSum float64
-	for _, point := range points {
-		xySum += (point.X - xAvg) * (point.Y - yAvg)
-		xxSum += (point.X - xAvg) * (point.X - xAvg)
-	}
-
-	a = xySum / xxSum
-	b = yAvg - a*xAvg
-	return
 }
